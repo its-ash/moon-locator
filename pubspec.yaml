@@ -1,0 +1,32 @@
+name: moon_locator
+description: "Find the moon in the camera view by GPS and time."
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.12.2
+
+dependencies:
+  flutter:
+    sdk: flutter
+  camera: ^0.12.2
+  geolocator: ^14.1.2
+  sensors_plus: ^7.1.1
+  intl: ^0.20.3
+
+dev_dependencies:
+  flutter_lints: ^6.0.0
+  flutter_launcher_icons: ^0.14.4
+  flutter_test:
+    sdk: flutter
+
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: assets/icon.png
+  adaptive_icon_background: "#0B1026"
+  adaptive_icon_foreground: assets/icon_fg.png
+  remove_alpha_ios: true
+
+flutter:
+  uses-material-design: true
