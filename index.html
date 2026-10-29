@@ -1,0 +1,322 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Moon Locator — find the moon with your camera</title>
+  <meta name="description" content="Moon Locator shows the moon position on your live camera view from GPS and time. Move the time slider to see when the moon is visible.">
+  <meta property="og:title" content="Moon Locator">
+  <meta property="og:description" content="Point your phone at the sky and find the moon. Plan when you can see it.">
+  <meta property="og:image" content="assets/icon.png">
+  <meta name="theme-color" content="#070b1f">
+  <link rel="icon" href="assets/moon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="assets/icon.png">
+  <style>
+    :root {
+      --bg: #050816;
+      --bg2: #0b1026;
+      --card: rgb(20 26 51 / 0.6);
+      --line: rgb(255 255 255 / 0.09);
+      --text: #eef1ff;
+      --muted: #a3abcc;
+      --gold: #ffd580;
+      --mint: #9be7c4;
+      --r: 24px;
+    }
+    * { box-sizing: border-box; margin: 0; }
+    html { color-scheme: dark; scroll-behavior: smooth; }
+    body {
+      font: 16px/1.6 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      color: var(--text);
+      background: radial-gradient(1200px 700px at 70% -10%, #1a2350 0%, transparent 60%), var(--bg);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+    #stars { position: fixed; inset: 0; z-index: -1; width: 100%; height: 100%; }
+    a { color: inherit; }
+    .wrap { width: min(1120px, 100% - 40px); margin-inline: auto; }
+
+    nav { display: flex; align-items: center; justify-content: space-between; padding: 22px 0; }
+    .brand { display: flex; align-items: center; gap: 10px; font-weight: 700; text-decoration: none; }
+    .brand img { width: 34px; height: 34px; border-radius: 9px; }
+    nav .links { display: flex; gap: 22px; font-size: 15px; }
+    nav .links a { color: var(--muted); text-decoration: none; }
+    nav .links a:hover { color: var(--text); }
+
+    .hero { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 48px; align-items: center; padding: 48px 0 80px; }
+    .eyebrow { display: inline-flex; gap: 8px; align-items: center; padding: 6px 12px; border: 1px solid var(--line); border-radius: 99px; color: var(--mint); font-size: 13px; font-weight: 600; letter-spacing: .04em; }
+    .eyebrow i { width: 7px; height: 7px; border-radius: 50%; background: #2ecc71; box-shadow: 0 0 10px #2ecc71; }
+    h1 { font-size: clamp(40px, 6vw, 68px); line-height: 1.04; letter-spacing: -0.03em; margin: 18px 0; }
+    h1 em { font-style: normal; background: linear-gradient(90deg, #fff6d8, var(--gold)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+    .lead { color: var(--muted); font-size: 19px; max-width: 34ch; }
+    .cta { display: flex; flex-wrap: wrap; gap: 14px; margin-top: 32px; align-items: center; }
+    .btn { display: inline-flex; align-items: center; gap: 10px; min-height: 52px; padding: 0 24px; border-radius: 16px; font-weight: 700; text-decoration: none; transition: transform .15s, box-shadow .15s; }
+    .btn svg { width: 20px; height: 20px; }
+    .btn.primary { background: linear-gradient(180deg, #ffe3a3, var(--gold)); color: #1a1405; box-shadow: 0 10px 30px rgb(255 213 128 / .25); }
+    .btn.primary:hover { transform: translateY(-2px); box-shadow: 0 14px 40px rgb(255 213 128 / .35); }
+    .btn.ghost { border: 1px solid var(--line); background: rgb(255 255 255 / .04); }
+    .btn.ghost:hover { background: rgb(255 255 255 / .08); }
+    .btn:focus-visible { outline: 3px solid var(--mint); outline-offset: 3px; }
+    .meta { color: var(--muted); font-size: 13px; margin-top: 14px; }
+
+    .phone { justify-self: center; width: 300px; aspect-ratio: 9 / 19.5; border-radius: 44px; padding: 10px; background: linear-gradient(145deg, #2a2f45, #0d1020); box-shadow: 0 40px 80px rgb(0 0 0 / .6), inset 0 0 0 1px rgb(255 255 255 / .08); position: relative; }
+    .screen { position: relative; width: 100%; height: 100%; border-radius: 36px; overflow: hidden; background: linear-gradient(180deg, #0a1030 0%, #1d2a5c 55%, #26324f 62%, #10131c 63%, #07080d 100%); }
+    .screen::before { content: ""; position: absolute; inset: 0; background-image: radial-gradient(1px 1px at 20% 30%, #fff9, transparent), radial-gradient(1px 1px at 70% 20%, #fff8, transparent), radial-gradient(1px 1px at 40% 45%, #fff6, transparent), radial-gradient(1.5px 1.5px at 85% 40%, #fffa, transparent), radial-gradient(1px 1px at 10% 52%, #fff7, transparent); }
+    .horizon { position: absolute; left: -10%; right: -10%; top: 61.5%; height: 2px; background: var(--mint); box-shadow: 0 0 10px var(--mint); transform: rotate(-4deg); opacity: .85; }
+    .card { position: absolute; left: 10px; right: 10px; border: 1px solid var(--line); background: rgb(12 16 36 / .72); backdrop-filter: blur(12px); }
+    .hud { top: 34px; border-radius: 18px; padding: 10px 12px; display: flex; gap: 10px; align-items: center; font-size: 10px; }
+    .hud b { font-size: 12.5px; display: block; }
+    .hud .stats { display: flex; gap: 12px; margin-top: 4px; color: var(--muted); }
+    .hud .stats span strong { display: block; color: var(--text); font-size: 11px; }
+    .sheet { bottom: 0; left: 0; right: 0; border-radius: 24px 24px 0 0; padding: 12px 14px 18px; }
+    .sheet .time { display: flex; align-items: baseline; gap: 8px; font-size: 26px; font-weight: 300; }
+    .sheet .time small { font-size: 10px; color: var(--gold); font-weight: 600; }
+    .sheet svg { display: block; width: 100%; height: 56px; border-radius: 10px; margin: 8px 0; }
+    .tiles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; font-size: 8.5px; color: var(--muted); }
+    .tiles div { background: rgb(255 255 255 / .06); border-radius: 10px; padding: 6px; }
+    .tiles div:last-child { background: rgb(255 213 128 / .12); color: var(--gold); }
+    .tiles strong { display: block; font-size: 13px; color: var(--text); font-weight: 600; }
+    .tiles div:last-child strong { color: var(--gold); }
+    .target { position: absolute; left: 58%; top: 36%; width: 64px; height: 64px; translate: -50% -50%; }
+    .target .ring { position: absolute; inset: -12px; border: 1.5px dashed var(--gold); border-radius: 50%; animation: spin 18s linear infinite; }
+    .label { position: absolute; left: 58%; top: calc(36% + 52px); translate: -50% 0; font-size: 9px; font-weight: 800; letter-spacing: .1em; color: var(--gold); background: rgb(0 0 0 / .5); padding: 3px 9px; border-radius: 99px; }
+    .notch { position: absolute; top: 18px; left: 50%; translate: -50% 0; width: 84px; height: 22px; background: #000; border-radius: 99px; z-index: 2; }
+
+    .moon { --s: 100%; width: var(--s); aspect-ratio: 1; border-radius: 50%; position: relative;
+      background:
+        radial-gradient(circle at 30% 45%, rgb(110 108 100 / .55) 0 14%, transparent 22%),
+        radial-gradient(circle at 36% 30%, rgb(110 108 100 / .55) 0 11%, transparent 18%),
+        radial-gradient(circle at 57% 30%, rgb(110 108 100 / .5) 0 8%, transparent 13%),
+        radial-gradient(circle at 64% 46%, rgb(110 108 100 / .45) 0 9%, transparent 15%),
+        radial-gradient(circle at 80% 36%, rgb(110 108 100 / .55) 0 5%, transparent 9%),
+        radial-gradient(circle at 46% 85%, rgb(250 248 236 / .9) 0 2%, transparent 3.5%),
+        radial-gradient(circle at 65% 35%, #fffbeb 0%, #e8e2cd 55%, #b2aa96 100%);
+      box-shadow: 0 0 40px rgb(255 243 196 / .45), 0 0 120px rgb(255 243 196 / .2), inset -10px -8px 24px rgb(0 0 0 / .35);
+    }
+    .moon::after { content: ""; position: absolute; inset: 0; border-radius: 50%; background: radial-gradient(circle at 18% 50%, rgb(22 25 36 / .92) 0 38%, rgb(22 25 36 / 0) 60%); }
+
+    section { padding: 70px 0; }
+    h2 { font-size: clamp(28px, 4vw, 40px); letter-spacing: -0.02em; line-height: 1.15; }
+    .sub { color: var(--muted); margin-top: 10px; max-width: 56ch; }
+    .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin-top: 36px; }
+    .feat { border: 1px solid var(--line); background: var(--card); border-radius: var(--r); padding: 24px; backdrop-filter: blur(10px); transition: border-color .2s, transform .2s; }
+    .feat:hover { border-color: rgb(255 213 128 / .35); transform: translateY(-3px); }
+    .feat .ico { width: 44px; height: 44px; border-radius: 12px; display: grid; place-items: center; background: rgb(255 213 128 / .12); color: var(--gold); margin-bottom: 14px; }
+    .feat .ico svg { width: 22px; height: 22px; }
+    .feat h3 { font-size: 18px; margin-bottom: 6px; }
+    .feat p { color: var(--muted); font-size: 15px; }
+
+    .steps { counter-reset: s; display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin-top: 36px; }
+    .steps li { list-style: none; counter-increment: s; padding: 24px; border-radius: var(--r); border: 1px solid var(--line); background: linear-gradient(180deg, rgb(255 255 255 / .04), transparent); }
+    .steps li::before { content: counter(s); display: grid; place-items: center; width: 34px; height: 34px; border-radius: 50%; background: var(--gold); color: #1a1405; font-weight: 800; margin-bottom: 14px; }
+    .steps strong { display: block; font-size: 17px; margin-bottom: 4px; }
+    .steps span { color: var(--muted); font-size: 15px; }
+
+    .final { text-align: center; border: 1px solid var(--line); border-radius: 32px; padding: 56px 24px; background: radial-gradient(600px 260px at 50% 0%, rgb(255 213 128 / .14), transparent), var(--card); }
+    .final .moon { --s: 88px; margin: 0 auto 22px; }
+    .final .cta { justify-content: center; }
+    footer { padding: 40px 0 60px; color: var(--muted); font-size: 14px; display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+
+    @keyframes spin { to { rotate: 360deg; } }
+    @keyframes float { 50% { translate: 0 -10px; } }
+    .phone { animation: float 7s ease-in-out infinite; }
+
+    @media (max-width: 900px) {
+      .hero { grid-template-columns: 1fr; text-align: center; padding-top: 24px; }
+      .lead { margin-inline: auto; }
+      .cta { justify-content: center; }
+      .grid, .steps { grid-template-columns: 1fr 1fr; }
+      nav .links { display: none; }
+    }
+    @media (max-width: 600px) { .grid, .steps { grid-template-columns: 1fr; } }
+    @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
+  </style>
+</head>
+<body>
+  <canvas id="stars" aria-hidden="true"></canvas>
+
+  <header class="wrap">
+    <nav aria-label="Main">
+      <a class="brand" href="#"><img src="assets/icon.png" alt="">Moon Locator</a>
+      <div class="links">
+        <a href="#features">Features</a>
+        <a href="#how">How it works</a>
+        <a href="https://github.com/its-ash/moon-locator">GitHub</a>
+      </div>
+    </nav>
+  </header>
+
+  <main>
+    <section class="wrap hero">
+      <div>
+        <span class="eyebrow"><i></i>Free · Offline · Open source</span>
+        <h1>Find the <em>moon</em><br>in your camera.</h1>
+        <p class="lead">Point your phone at the sky. Moon Locator uses GPS and time to show where the moon is, and when you can see it.</p>
+        <div class="cta">
+          <a class="btn primary" href="https://github.com/its-ash/moon-locator/releases/latest/download/moon-locator.apk" download>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11m0 0-4.5-4.5M12 15l4.5-4.5M5 20h14"/></svg>
+            Download for Android
+          </a>
+          <a class="btn ghost" href="https://github.com/its-ash/moon-locator">
+            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .5a11.5 11.5 0 0 0-3.64 22.41c.58.1.79-.25.79-.56v-2c-3.2.7-3.88-1.37-3.88-1.37-.52-1.33-1.28-1.68-1.28-1.68-1.05-.72.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.77 2.7 1.26 3.36.96.1-.75.4-1.26.73-1.55-2.55-.29-5.24-1.28-5.24-5.69 0-1.26.45-2.29 1.19-3.1-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.17 1.18a11 11 0 0 1 5.77 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.11 3.05.74.81 1.19 1.84 1.19 3.1 0 4.42-2.7 5.4-5.26 5.68.41.36.78 1.06.78 2.14v3.17c0 .31.21.67.8.56A11.5 11.5 0 0 0 12 .5Z"/></svg>
+            View source
+          </a>
+        </div>
+        <p class="meta" id="ver">Android 7.0 or newer · APK from GitHub Releases</p>
+      </div>
+
+      <div class="phone" role="img" aria-label="App screen: the camera view shows the moon in a target ring above the horizon, with a time chart below">
+        <div class="notch"></div>
+        <div class="screen">
+          <div class="horizon"></div>
+          <div class="target"><div class="moon"></div><div class="ring"></div></div>
+          <div class="label">MOON 34.2°</div>
+          <div class="card hud">
+            <div class="moon" style="--s:46px;flex:none"></div>
+            <div>
+              <b>Waxing Gibbous</b>
+              <span style="color:var(--muted)">78% lit · Above horizon</span>
+              <div class="stats"><span>ALT<strong>34.2°</strong></span><span>AZ<strong>142° SE</strong></span><span>DIST<strong>371k km</strong></span></div>
+            </div>
+          </div>
+          <div class="card sheet">
+            <div class="time">21:45 <small>Tue, 3 Nov · in 2h 10m</small></div>
+            <svg viewBox="0 0 300 56" preserveAspectRatio="none" aria-hidden="true">
+              <defs>
+                <linearGradient id="sky" x1="0" x2="1"><stop offset="0" stop-color="#5b86c5"/><stop offset=".3" stop-color="#2b3a73"/><stop offset=".42" stop-color="#070b1f"/><stop offset=".8" stop-color="#070b1f"/><stop offset=".95" stop-color="#2b3a73"/><stop offset="1" stop-color="#5b86c5"/></linearGradient>
+                <linearGradient id="fill" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffd580" stop-opacity=".45"/><stop offset="1" stop-color="#ffd580" stop-opacity=".05"/></linearGradient>
+              </defs>
+              <rect width="300" height="56" fill="url(#sky)"/>
+              <path d="M70 34 C110 0 170 0 210 34 Z" fill="url(#fill)"/>
+              <path d="M0 52 C30 56 50 46 70 34 C110 0 170 0 210 34 C240 52 270 56 300 52" fill="none" stroke="#ffd580" stroke-width="2"/>
+              <line x1="0" y1="34" x2="300" y2="34" stroke="#fff5"/>
+              <line x1="150" y1="0" x2="150" y2="56" stroke="#fff" stroke-width="1.5"/>
+              <circle cx="150" cy="9" r="4.5" fill="#fff"/>
+            </svg>
+            <div class="tiles">
+              <div>↗ Moonrise<strong>15:12</strong></div>
+              <div>↘ Moonset<strong>03:40</strong></div>
+              <div>☾ Best view<strong>19:05</strong></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="wrap" id="features">
+      <h2>Everything you need to see the moon</h2>
+      <p class="sub">No account, no ads, no network. All calculations run on your phone.</p>
+      <div class="grid">
+        <article class="feat">
+          <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 8a2 2 0 0 1 2-2h2l2-2h6l2 2h2a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z"/><circle cx="12" cy="13" r="4"/></svg></div>
+          <h3>Live camera view</h3>
+          <p>The moon, the horizon, and compass points show on top of the camera image.</p>
+        </article>
+        <article class="feat">
+          <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m5 12 14-7-7 14-2-5Z"/></svg></div>
+          <h3>Turn-by-turn pointer</h3>
+          <p>When the moon is off screen, an arrow and the heading strip tell you where to turn.</p>
+        </article>
+        <article class="feat">
+          <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></div>
+          <h3>Time slider</h3>
+          <p>Move from 12 hours back to 48 hours ahead, or pick any date. The view updates at once.</p>
+        </article>
+        <article class="feat">
+          <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 17c4-8 14-8 18 0"/><path d="M3 20h18"/></svg></div>
+          <h3>Altitude chart</h3>
+          <p>See the moon height over time on day, twilight, and night colors.</p>
+        </article>
+        <article class="feat">
+          <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z"/></svg></div>
+          <h3>Rise, set, best view</h3>
+          <p>Know the next moonrise, moonset, and the first dark-sky time. Tap to jump there.</p>
+        </article>
+        <article class="feat">
+          <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 3a9 9 0 0 1 0 18"/></svg></div>
+          <h3>Real phase</h3>
+          <p>A realistic moon image with the correct phase, percent lit, and distance.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="wrap" id="how">
+      <h2>How it works</h2>
+      <p class="sub">Three steps. It takes a few seconds.</p>
+      <ol class="steps">
+        <li><strong>Allow camera and location</strong><span>Your location stays on the phone. It is used only to calculate the moon position.</span></li>
+        <li><strong>Point at the sky</strong><span>Follow the arrow until the moon is in the target ring. The ring turns gold when you are on target.</span></li>
+        <li><strong>Plan your view</strong><span>Drag the slider or the chart to see when the moon is high and the sky is dark.</span></li>
+      </ol>
+    </section>
+
+    <section class="wrap">
+      <div class="final">
+        <div class="moon"></div>
+        <h2>Go find the moon tonight</h2>
+        <p class="sub" style="margin-inline:auto">Download the free APK and install it on your Android phone.</p>
+        <div class="cta">
+          <a class="btn primary" href="https://github.com/its-ash/moon-locator/releases/latest/download/moon-locator.apk" download>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11m0 0-4.5-4.5M12 15l4.5-4.5M5 20h14"/></svg>
+            Download APK
+          </a>
+          <a class="btn ghost" href="https://github.com/its-ash/moon-locator/releases">All releases</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="wrap">
+    <span>© <span id="yr"></span> Moon Locator</span>
+    <span>Made with Flutter · <a href="https://github.com/its-ash/moon-locator">its-ash/moon-locator</a></span>
+  </footer>
+
+  <script>
+    document.getElementById('yr').textContent = new Date().getFullYear();
+
+    fetch('https://api.github.com/repos/its-ash/moon-locator/releases/latest', { headers: { Accept: 'application/vnd.github+json' } })
+      .then(r => (r.ok ? r.json() : Promise.reject(r.status)))
+      .then(rel => {
+        const apk = (rel.assets || []).find(a => a.name.endsWith('.apk'));
+        const mb = apk ? ` · ${(apk.size / 1048576).toFixed(1)} MB` : '';
+        const tag = String(rel.tag_name || '').slice(0, 20);
+        document.getElementById('ver').textContent = `Latest ${tag}${mb} · Android 7.0 or newer`;
+      })
+      .catch(() => {});
+
+    const cv = document.getElementById('stars');
+    const cx = cv.getContext('2d');
+    const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    let stars = [];
+    const resize = () => {
+      const d = devicePixelRatio || 1;
+      cv.width = innerWidth * d;
+      cv.height = innerHeight * d;
+      cx.setTransform(d, 0, 0, d, 0, 0);
+      stars = Array.from({ length: Math.round((innerWidth * innerHeight) / 5000) }, () => ({
+        x: Math.random() * innerWidth,
+        y: Math.random() * innerHeight,
+        r: Math.random() * 1.2 + 0.2,
+        p: Math.random() * Math.PI * 2,
+      }));
+    };
+    const draw = t => {
+      cx.clearRect(0, 0, innerWidth, innerHeight);
+      for (const s of stars) {
+        cx.globalAlpha = 0.35 + 0.45 * (still ? 0.6 : (Math.sin(t / 1400 + s.p) + 1) / 2);
+        cx.beginPath();
+        cx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+        cx.fillStyle = '#fff';
+        cx.fill();
+      }
+      if (!still) requestAnimationFrame(draw);
+    };
+    addEventListener('resize', () => {
+      resize();
+      if (still) draw(0);
+    });
+    resize();
+    requestAnimationFrame(draw);
+  </script>
+</body>
+</html>
