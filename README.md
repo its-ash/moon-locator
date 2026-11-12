@@ -13,6 +13,7 @@ Point your phone at the sky and find the moon. Slide through time to see when yo
 - **Altitude chart**: shows the moon height over time on day, twilight, and night colors.
 - **Moonrise, moonset, best view**: tap a tile to jump to that time.
 - **Phase**: realistic moon image with phase, percent lit, and distance.
+- **Home-screen widget**: tonight's phase, percent lit, moonrise and moonset, and the next full and new moon. Tap to open the app.
 - **Offline**: all calculations run on the phone. The internet is used only to check for app updates.
 
 How it works: moon and sun positions use the SunCalc algorithm (`lib/astro.dart`), the phone

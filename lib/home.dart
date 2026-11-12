@@ -13,6 +13,7 @@ import 'orientation.dart';
 import 'settings_screen.dart';
 import 'sky_painter.dart';
 import 'timeline.dart';
+import 'widget_sync.dart';
 
 const kPast = Duration(hours: 12);
 const kSpan = Duration(hours: 60);
@@ -57,6 +58,7 @@ class _HomeState extends State<Home> with WidgetsBindingObserver {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     _pose.start();
+    syncWidget(); // phases only; rise/set follow once a location is known
     _initCam();
     _initLoc();
     _tick = Timer.periodic(const Duration(seconds: 30), (_) {
@@ -124,6 +126,7 @@ class _HomeState extends State<Home> with WidgetsBindingObserver {
 
   void _setPos(Position p) {
     _pos = p;
+    syncWidget(lat: p.latitude, lng: p.longitude);
     _setBase(_base, live: _live);
   }
 

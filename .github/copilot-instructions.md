@@ -12,6 +12,7 @@ Flutter app (Android). It shows the moon position on the live camera view. The p
 - `lib/settings_screen.dart`: Compass and Privacy notes, then `UiAppearanceSection()`, `UiUpdateSection(storeId: 'moon-locator')`, `UiDeveloperSection()`.
 - `lib/moon_art.dart`: moon image renderer (phase, maria, craters, glow).
 - `lib/heading_tape.dart`: compass strip with the moon marker.
+- `lib/widget_sync.dart` + `android/.../MoonWidget.kt`: home-screen widget (tonight's phase, rise/set, next full/new moon). Dart computes 30 days with `astro.dart` and sends JSON over the `com.itsash.moon_locator/widget` MethodChannel; `MainActivity` stores it in SharedPreferences and `MoonWidget` picks today's entry by local date. No astronomy in Kotlin.
 
 ## Rules
 - Portrait only. The projection uses `kCamVFov` in `sky_painter.dart`.

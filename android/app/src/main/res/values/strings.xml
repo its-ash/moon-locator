@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="widget_description">Tonight\'s moon phase, moonrise, moonset and the next full and new moon.</string>
+    <string name="widget_empty">Open Moon Locator to update</string>
+    <string name="widget_illum">%1$d%% lit</string>
+    <string name="widget_rise_set">Rise %1$s  ·  Set %2$s</string>
+    <string name="widget_no_location">Open the app for rise and set</string>
+    <string name="widget_next">Full %1$s  ·  New %2$s</string>
+</resources>
