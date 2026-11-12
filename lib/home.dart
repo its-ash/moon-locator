@@ -10,6 +10,7 @@ import 'astro.dart';
 import 'heading_tape.dart';
 import 'moon_art.dart';
 import 'orientation.dart';
+import 'settings_screen.dart';
 import 'sky_painter.dart';
 import 'timeline.dart';
 
@@ -222,12 +223,24 @@ class _HomeState extends State<Home> with WidgetsBindingObserver {
             }),
             SafeArea(child: Align(alignment: Alignment.topCenter, child: _hud(p))),
             Align(alignment: Alignment.bottomCenter, child: _panel()),
-          ] else
+          ] else ...[
             _status(),
+            SafeArea(child: Align(alignment: Alignment.topRight, child: _settingsButton())),
+          ],
         ],
       ),
     );
   }
+
+  Widget _settingsButton({bool compact = false}) => IconButton(
+        tooltip: 'Settings',
+        padding: compact ? EdgeInsets.zero : null,
+        iconSize: compact ? 20 : null,
+        icon: const Icon(Icons.settings_rounded, color: Colors.white70),
+        onPressed: () => Navigator.of(context).push(
+          MaterialPageRoute<void>(builder: (_) => const SettingsScreen()),
+        ),
+      );
 
   Widget _preview() {
     final c = _cam;
@@ -315,8 +328,15 @@ class _HomeState extends State<Home> with WidgetsBindingObserver {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(m.phaseName,
-                          style: t.titleMedium?.copyWith(color: Colors.white, fontWeight: FontWeight.w700)),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Text(m.phaseName,
+                                style: t.titleMedium?.copyWith(color: Colors.white, fontWeight: FontWeight.w700)),
+                          ),
+                          SizedBox.square(dimension: 32, child: _settingsButton(compact: true)),
+                        ],
+                      ),
                       const SizedBox(height: 2),
                       Row(
                         children: [

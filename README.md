@@ -1,13 +1,8 @@
-<p align="center"><img src="assets/icon.png" width="96" alt="Moon Locator icon"></p>
+# Moon Locator
 
-<h1 align="center">Moon Locator</h1>
+Point your phone at the sky and find the moon. Slide through time to see when you can see it.
 
-<p align="center">Point your phone at the sky and find the moon. Move the time slider to see when you can see it.</p>
-
-<p align="center">
-  <a href="https://github.com/its-ash/moon-locator/releases/latest/download/moon-locator.apk"><b>⬇ Download APK</b></a> ·
-  <a href="https://github.com/its-ash/moon-locator/releases">All releases</a>
-</p>
+**[Website](https://moon-locator.itsash.in)** · **[Download APK](https://github.com/its-ash/moon-locator/releases/latest/download/moon-locator.apk)** · Get it in **[Ash Store](https://store.itsash.in)**
 
 ## Features
 
@@ -18,47 +13,60 @@
 - **Altitude chart**: shows the moon height over time on day, twilight, and night colors.
 - **Moonrise, moonset, best view**: tap a tile to jump to that time.
 - **Phase**: realistic moon image with phase, percent lit, and distance.
-- **Offline**: all calculations run on the phone. No network is necessary.
+- **Offline**: all calculations run on the phone. The internet is used only to check for app updates.
 
-## How it works
+How it works: moon and sun positions use the SunCalc algorithm (`lib/astro.dart`), the phone
+direction comes from the accelerometer and magnetometer (`lib/orientation.dart`), and the overlay
+uses a portrait pinhole camera model with `kCamVFov = 62°` (`lib/sky_painter.dart`). The compass
+gives magnetic north, without declination correction; move the phone in a figure 8 to calibrate it.
 
-| Part | Method |
-|---|---|
-| Moon and sun position | SunCalc algorithm (`lib/astro.dart`) |
-| Phone direction | Accelerometer and magnetometer (`lib/orientation.dart`) |
-| Projection | Pinhole camera model, portrait, `kCamVFov = 62°` (`lib/sky_painter.dart`) |
-| Location | GPS through `geolocator` |
+Permissions: **Camera** to show the sky, **Location** to compute the moon position for your place.
 
-> The compass gives magnetic north. The app does not correct for magnetic declination. Move the phone in a figure 8 to calibrate the compass.
+## Install
 
-## Permissions
+- **Ash Store**: install [Ash Store](https://store.itsash.in) once, then install and update Moon Locator from it.
+- **APK**: download the [latest APK](https://github.com/its-ash/moon-locator/releases/latest/download/moon-locator.apk) on your phone and open it. Allow your browser to install unknown apps if Android asks.
 
-- **Camera**: to show the sky.
-- **Location**: to calculate the moon position for your place.
+Requires Android 7.0 or newer (Flutter's default minimum).
 
-## Development
+## Develop
 
-Requirements: Flutter 3.44 or newer, Android SDK or Xcode.
+Needs Flutter ≥ 3.44 and the shared theme package at `../theme`.
 
-```sh
-make run     # run on a connected device
-make build   # build a release APK to build/moon-locator.apk
-make deploy  # build, commit, push to main, tag the next version, and make a GitHub release
+```bash
+make run      # run on a connected device
+make build    # release APK
+make test     # flutter analyze
+make deploy   # bump version, build, tag, push, GitHub release (see store.mk)
 ```
 
-`make deploy` finds the latest `vX.Y.Z` tag and increments the patch number (for example `v1.0.4` → `v1.0.5`). It needs the `gh` CLI with a login.
+## Release
+
+`make deploy` follows the Ash Store kit (`store.mk`, `store.json`): it bumps the
+version in `pubspec.yaml`, builds, commits, tags `vX.Y.Z`, pushes, and publishes
+a GitHub release with `moon-locator.apk`. Ash Store and the website pick up the new
+version from that release.
 
 ## Project layout
 
 ```
 lib/
-  main.dart          app entry, portrait lock
-  home.dart          screen, camera, location, time controls
-  astro.dart         moon and sun math
-  orientation.dart   sensor fusion
-  sky_painter.dart   camera overlay
-  moon_art.dart      moon image renderer
-  heading_tape.dart  compass strip
-  timeline.dart      altitude chart
-index.html           project web page
+  main.dart             app entry (UiApp), portrait lock
+  home.dart             screen, camera, location, time controls
+  settings_screen.dart  settings: appearance, updates, developer
+  astro.dart            moon and sun math
+  orientation.dart      sensor fusion
+  sky_painter.dart      camera overlay
+  moon_art.dart         moon image renderer
+  heading_tape.dart     compass strip
+  timeline.dart         altitude chart
+assets/icon/            two-color pixel-art app icon (SVG sources + 1024 px PNGs)
+index.html              landing page (moon-locator.itsash.in)
+store.json              Ash Store manifest
 ```
+
+## License
+
+No license file is included yet.
+
+Built by [itsash.in](https://itsash.in).

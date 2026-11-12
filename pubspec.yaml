@@ -13,6 +13,8 @@ dependencies:
   geolocator: ^14.1.2
   sensors_plus: ^7.1.1
   intl: ^0.20.3
+  theme:
+    path: ../theme
 
 dev_dependencies:
   flutter_lints: ^6.0.0
@@ -20,9 +22,9 @@ dev_dependencies:
 flutter_launcher_icons:
   android: true
   ios: true
-  image_path: assets/icon.png
+  image_path: assets/icon/logo-1024.png
   adaptive_icon_background: "#0B1026"
-  adaptive_icon_foreground: assets/icon_fg.png
+  adaptive_icon_foreground: assets/icon/logo_foreground-1024.png
   remove_alpha_ios: true
 
 flutter:

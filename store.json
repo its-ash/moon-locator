@@ -1,0 +1,11 @@
+{
+  "id": "moon-locator",
+  "name": "Moon Locator",
+  "repo": "its-ash/moon-locator",
+  "package": "com.itsash.moon_locator",
+  "tagline": "Point your phone at the sky and find the moon. Slide through time to see when you can see it.",
+  "description": "Moon Locator shows where the moon is on your live camera view, from your GPS position and the time. When the moon is off screen, an arrow and a compass strip tell you which way to turn. Move the time slider from 12 hours back to 48 hours ahead, or pick any date, to see the moon's height over the day and night, moonrise, moonset and the best time to look. A realistic moon image shows the phase, percent lit and distance. All calculations run on the phone.",
+  "category": "Tools",
+  "icon": "assets/icon/logo-1024.png",
+  "homepage": "https://moon-locator.itsash.in/"
+}
