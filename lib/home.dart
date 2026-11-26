@@ -39,6 +39,9 @@ class Home extends StatefulWidget {
 class _HomeState extends State<Home> with WidgetsBindingObserver {
   final _pose = PoseTracker();
   CameraController? _cam;
+  Future<void>? _disposing;
+  bool _initializing = false;
+  bool _active = true;
   String? _camErr, _locErr;
   Position? _pos;
   late DateTime _base = DateTime.now();
@@ -61,6 +64,11 @@ class _HomeState extends State<Home> with WidgetsBindingObserver {
     syncWidget(); // phases only; rise/set follow once a location is known
     _initCam();
     _initLoc();
+    _startTick();
+  }
+
+  void _startTick() {
+    _tick?.cancel();
     _tick = Timer.periodic(const Duration(seconds: 30), (_) {
       if (_live) _setBase(DateTime.now(), live: true);
     });
@@ -68,6 +76,7 @@ class _HomeState extends State<Home> with WidgetsBindingObserver {
 
   @override
   void dispose() {
+    _active = false;
     WidgetsBinding.instance.removeObserver(this);
     _tick?.cancel();
     _cam?.dispose();
@@ -77,30 +86,59 @@ class _HomeState extends State<Home> with WidgetsBindingObserver {
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState s) {
-    final c = _cam;
-    if (s == AppLifecycleState.inactive && c != null && c.value.isInitialized) {
-      _cam = null;
-      c.dispose();
-      if (mounted) setState(() {});
-    } else if (s == AppLifecycleState.resumed && _cam == null) {
-      _initCam();
+    if (s == AppLifecycleState.inactive || s == AppLifecycleState.paused) {
+      _active = false;
+      _pose.stop();
+      _tick?.cancel();
+      _tick = null;
+      final c = _cam;
+      if (c != null) {
+        _cam = null;
+        _disposing = c.dispose();
+        if (mounted) setState(() {});
+      }
+    } else if (s == AppLifecycleState.resumed) {
+      _active = true;
+      _pose.start();
+      _startTick();
+      if (_live) _setBase(DateTime.now(), live: true);
+      if (_cam == null) _initCam();
     }
   }
 
   Future<void> _initCam() async {
+    if (_initializing || !_active) return;
+    _initializing = true;
     try {
+      try {
+        await _disposing;
+      } catch (_) {}
+      _disposing = null;
+      if (!mounted || !_active) return;
       final cams = await availableCameras();
       if (cams.isEmpty) throw CameraException('none', 'No camera found');
       final back = cams.firstWhere((c) => c.lensDirection == CameraLensDirection.back, orElse: () => cams.first);
       final c = CameraController(back, ResolutionPreset.high, enableAudio: false);
-      await c.initialize();
-      if (!mounted) return c.dispose();
+      try {
+        await c.initialize();
+      } catch (_) {
+        unawaited(c.dispose().catchError((_) {}));
+        rethrow;
+      }
+      if (!mounted || !_active) {
+        _disposing = c.dispose();
+        return;
+      }
       setState(() {
         _cam = c;
         _camErr = null;
       });
     } on CameraException catch (e) {
       if (mounted) setState(() => _camErr = e.description ?? e.code);
+    } catch (e) {
+      if (mounted) setState(() => _camErr = '$e');
+    } finally {
+      _initializing = false;
     }
   }
 
@@ -154,13 +192,16 @@ class _HomeState extends State<Home> with WidgetsBindingObserver {
 
   Future<void> _pickDate() async {
     final now = DateTime.now();
+    final first = now.subtract(const Duration(days: 365 * 5));
+    final last = now.add(const Duration(days: 365 * 5));
+    final initial = _at.isBefore(first) ? first : (_at.isAfter(last) ? last : _at);
     final d = await showDatePicker(
       context: context,
-      initialDate: _at,
-      firstDate: now.subtract(const Duration(days: 365 * 5)),
-      lastDate: now.add(const Duration(days: 365 * 5)),
+      initialDate: initial,
+      firstDate: first,
+      lastDate: last,
     );
-    if (d == null) return;
+    if (d == null || !mounted) return;
     final b = DateTime(d.year, d.month, d.day, _at.hour, _at.minute);
     _setBase(b, live: false);
     setState(() => _at = b);

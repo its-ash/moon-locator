@@ -20,6 +20,7 @@ class SettingsScreen extends StatelessWidget {
                 subtitle: 'If the moon marker drifts, move the phone in a figure 8 a few times. '
                     'Headings are magnetic north, not corrected for declination.',
                 icon: Icons.explore_rounded,
+                maxSubtitleLines: 4,
               ),
             ],
           ),
@@ -33,6 +34,7 @@ class SettingsScreen extends StatelessWidget {
                     'Moon Locator uses the internet only to check for app updates.',
                 icon: Icons.lock_rounded,
                 iconStatus: UiStatus.success,
+                maxSubtitleLines: 4,
               ),
             ],
           ),

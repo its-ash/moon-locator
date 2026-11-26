@@ -60,7 +60,7 @@ Eq _moonCoords(double d) {
 Horiz _horiz(Eq c, double d, double lat, double lng, {bool refract = false}) {
   final phi = _rad * lat;
   final h = _sidereal(d, _rad * -lng) - c.ra;
-  var alt = asin(sin(phi) * sin(c.dec) + cos(phi) * cos(c.dec) * cos(h));
+  var alt = asin((sin(phi) * sin(c.dec) + cos(phi) * cos(c.dec) * cos(h)).clamp(-1.0, 1.0));
   if (refract) alt += _refraction(alt);
   final az = atan2(sin(h), cos(h) * sin(phi) - tan(c.dec) * cos(phi)) + pi;
   return (az: (az / _rad) % 360, alt: alt / _rad);
@@ -82,7 +82,7 @@ MoonState moonState(DateTime t, double lat, double lng) {
   final d = _days(t);
   final s = _sunCoords(d), m = _moonCoords(d);
   final p = _horiz(m, d, lat, lng, refract: true);
-  final phi = acos(sin(s.dec) * sin(m.dec) + cos(s.dec) * cos(m.dec) * cos(s.ra - m.ra));
+  final phi = acos((sin(s.dec) * sin(m.dec) + cos(s.dec) * cos(m.dec) * cos(s.ra - m.ra)).clamp(-1.0, 1.0));
   final inc = atan2(s.dist * sin(phi), m.dist - s.dist * cos(phi));
   final angle = atan2(
     cos(s.dec) * sin(s.ra - m.ra),

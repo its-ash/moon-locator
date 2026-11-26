@@ -1,1 +1,6 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" shape-rendering="crispEdges"><path fill="#FFD54F" d="M192 192h128v64h-128zM192 256h64v64h-64zM704 192h128v64h-128zM768 256h64v64h-64zM192 768h128v64h-128zM192 704h64v64h-64zM704 768h128v64h-128zM768 704h64v64h-64zM512 256h128v64h-128zM384 320h192v64h-192zM320 384h192v256h-192zM384 640h192v64h-192zM512 704h128v64h-128z"/></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <defs>
+  <filter id="sh" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="16" stdDeviation="20" flood-color="#000000" flood-opacity="0.22"/></filter><linearGradient id="moon" x1="340" y1="300" x2="660" y2="720" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#FEF9C3"/><stop offset="100%" stop-color="#FACC15"/></linearGradient>
+  </defs>
+  <g filter="url(#sh)"><circle cx="512" cy="512" r="286" fill="none" stroke="#93C5FD" stroke-opacity="0.34" stroke-width="16" stroke-dasharray="28 22"/><path d="M 556 306 A 206 206 0 1 0 704 606 A 164 164 0 1 1 556 306 Z" fill="url(#moon)"/><path d="M 656 334 L 670 374 L 710 388 L 670 402 L 656 442 L 642 402 L 602 388 L 642 374 Z" fill="#FFFFFF"/><circle cx="600" cy="306" r="14" fill="#FEF08A"/><circle cx="716" cy="480" r="10" fill="#DBEAFE"/></g>
+</svg>

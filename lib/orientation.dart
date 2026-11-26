@@ -52,6 +52,7 @@ class PoseTracker extends ValueNotifier<Pose?> {
   String? error;
 
   void start() {
+    stop();
     _acc = accelerometerEventStream(samplingPeriod: SensorInterval.gameInterval).listen(
       (ev) => _g = _lerp(_g, (x: ev.x, y: ev.y, z: ev.z)),
       onError: (_) => _fail('Accelerometer not available'),
@@ -65,6 +66,13 @@ class PoseTracker extends ValueNotifier<Pose?> {
       onError: (_) => _fail('Compass not available'),
       cancelOnError: true,
     );
+  }
+
+  void stop() {
+    _acc?.cancel();
+    _mag?.cancel();
+    _acc = null;
+    _mag = null;
   }
 
   void _fail(String msg) {
@@ -83,8 +91,7 @@ class PoseTracker extends ValueNotifier<Pose?> {
 
   @override
   void dispose() {
-    _acc?.cancel();
-    _mag?.cancel();
+    stop();
     super.dispose();
   }
 }
